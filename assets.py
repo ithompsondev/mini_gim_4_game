@@ -61,3 +61,6 @@ class Flame:
 
         self.color = get_flame_color_from_chemical(self.sources[0].comp)
         self.sources[0].burn()
+
+    def __str__(self):
+        return f'current fuel = {self.fuel}\ncurrent color = {self.color}\nfuel sources = {self.sources}'
