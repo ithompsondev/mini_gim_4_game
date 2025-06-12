@@ -14,11 +14,11 @@ running = True
 prev_time = time.time()
 dt = 0
 elapsed = 0
-fps = 30
+fps = 20
 clock = pygame.time.Clock()
 
 def setup(surf):
-    flame = Flame()
+    flame = Flame(0.0, 150, 150)
     flame.add_fuel(FuelSource(Source.TWIG))
     flame.add_fuel(FuelSource(Source.TWIG))
     flame.add_fuel(FuelSource(Source.TWIG))
@@ -45,11 +45,9 @@ while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
-
-    flame_size = flame.fuel/100
-    pygame.draw.rect(flame.canvas, flame.color.value[1], pygame.Rect(flame.location, (30*flame_size,30*flame_size)))
     
-    if len(flame.sources) > 0:
+    if flame.has_fuel():
         flame.update(dt)
+        flame.render()
 
     pygame.display.flip()
