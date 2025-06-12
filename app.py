@@ -1,6 +1,7 @@
 import time
 import pygame
 from pygame.locals import *
+from assets import *
 
 pygame.init()
 
@@ -16,6 +17,21 @@ elapsed = 0
 fps = 30
 clock = pygame.time.Clock()
 
+def setup(surf):
+    flame = Flame()
+    flame.add_fuel(FuelSource(Source.TWIG))
+    flame.add_fuel(FuelSource(Source.TWIG))
+    flame.add_fuel(FuelSource(Source.TWIG))
+    flame.add_fuel(FuelSource(Source.TWIG))
+    flame.add_fuel(FuelSource(Source.TWIG))
+   
+    flame.set_canvas(surf)
+    flame.set_location((_width/2 - 15, _height/2 - 15))
+
+    return flame
+
+flame = setup(screen)
+
 # Game loop from start to finish is considered 1 frame
 while running:
     clock.tick(fps) # limit fps, ensure framerate does not exceed fps value    
@@ -29,5 +45,11 @@ while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
+
+    flame_size = flame.fuel/100
+    pygame.draw.rect(flame.canvas, flame.color.value[1], pygame.Rect(flame.location, (30*flame_size,30*flame_size)))
+    
+    if len(flame.sources) > 0:
+        flame.update(dt)
 
     pygame.display.flip()

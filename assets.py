@@ -28,6 +28,10 @@ class FlameColor(Enum):
     GOLD_YELLOW = (Chem.IRON, (255, 195, 0))
     ORANGE_YELLOW = (Chem.CARBON, (255, 165, 0))
 
+class Source(Enum):
+    TWIG = {'fuel_provided': 10.0, 'burn_rate_multiplier': 0.1, 'chemical_comp': Chem.CARBON}
+    LOG = {'fuel_provided': 100.0, 'burn_rate_multiplier': 0.05, 'chemical_comp': Chem.CARBON}
+
 def get_flame_color_from_chemical(chem):
     for color in FlameColor:
         if color.value[0] == chem:
@@ -35,30 +39,51 @@ def get_flame_color_from_chemical(chem):
     return None
 
 # Frame independent burn rate = x/dt where x is some arbitrary measure of what burns for some period of delta time, e.g mass
-class FuelSource:
-    def __init__(self, amount=1.0, burn_rate=1.0, chemical_composition=Chem.CARBON):
-        self.amount = amount
-        self.burn_rate = burn_rate
-        self.comp = chemical_composition
+class Asset:
+    def __init__(self):
+        self.surface = None
+        self.location = (0,0)
+    
+    def set_canvas(self, canvas):
+        self.canvas = canvas
 
-    def burn(self):
-        self.amount -= GLOBAL_BURN_AMT * self.burn_rate
+    def set_location(self, loc):
+        self.location = loc
+
+class FuelSource(Asset):
+    def __init__(self, source):
+        self.name = source.name.lower()
+        self.amount = source.value['fuel_provided']
+        self.burn_rate_multiplier = source.value['burn_rate_multiplier']
+        self.comp = source.value['chemical_comp']
+
+    def burn(self, dt):
+        print(f'dt = {dt}')
+        print(f'current fuel for this source = {self.amount}')
+        print(f'burning {self.burn_rate_multiplier*dt} fuel\n')
+        fuel_burned = self.burn_rate_multiplier*dt
+        self.amount -= fuel_burned
+        return fuel_burned
     
 
-class Flame:
+class Flame(Asset):
     def __init__(self, fuel=0.0, color=FlameColor.ORANGE_YELLOW):
         self.fuel = fuel
         self.color = color
         self.sources = []
 
     def add_fuel(self, fuel_source):
-        self.source.push(fuel_source)
+        self.sources.append(fuel_source)
         self.fuel += fuel_source.amount
 
-    def update(self):
+    def update(self, dt):
         recently_burned_source = None
         if self.sources[0].amount <= 0.0:
             recently_burned_source = self.sources.pop(0)
 
-        self.color = get_flame_color_from_chemical(self.sources[0].comp)
-        self.sources[0].burn()
+        if len(self.sources) > 0:
+            self.color = get_flame_color_from_chemical(self.sources[0].comp)
+            fuel_burned = self.sources[0].burn(dt)
+            self.fuel -= fuel_burned
+        else:
+            self.fuel = 0.0
