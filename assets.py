@@ -34,6 +34,7 @@ def get_flame_color_from_chemical(chem):
             return color
     return None
 
+# Frame independent burn rate = x/dt where x is some arbitrary measure of what burns for some period of delta time, e.g mass
 class FuelSource:
     def __init__(self, amount=1.0, burn_rate=1.0, chemical_composition=Chem.CARBON):
         self.amount = amount
