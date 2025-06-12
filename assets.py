@@ -32,9 +32,10 @@ class FlameColor(Enum):
 SRC_AMT = 'fuel_provided'
 SRC_RATE = 'burn_rate_multiplier'
 SRC_CHEM = 'chemical_comp'
+SRC_COL = 'color'
 class Source(Enum):
-    TWIG = {'fuel_provided': 10.0, 'burn_rate_multiplier': 0.1, 'chemical_comp': Chem.CARBON}
-    LOG = {'fuel_provided': 100.0, 'burn_rate_multiplier': 0.05, 'chemical_comp': Chem.CARBON}
+    TWIG = {'fuel_provided': 10.0, 'burn_rate_multiplier': 0.1, 'chemical_comp': Chem.CARBON, 'color': (0,0,0)}
+    LOG = {'fuel_provided': 100.0, 'burn_rate_multiplier': 0.05, 'chemical_comp': Chem.CARBON, 'color': (100,100,100)}
 
 def get_flame_color_from_chemical(chem):
     for color in FlameColor:
@@ -55,11 +56,13 @@ class Asset:
         self.location = loc
 
 class FuelSource(Asset):
-    def __init__(self, source):
+    def __init__(self, source, renderable=False):
         self.name = source.name.lower()
         self.amount = source.value[SRC_AMT]
         self.burn_rate_multiplier = source.value[SRC_RATE]
         self.comp = source.value[SRC_CHEM]
+        self.color = source.value[SRC_COL]
+        self.renderable = renderable
 
     def burn(self, dt):
         fuel_burned = self.burn_rate_multiplier*dt
