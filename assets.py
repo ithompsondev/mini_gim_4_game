@@ -1,107 +1,157 @@
-from enum import Enum
+from abc import ABC, abstractmethod
 import pygame
+import uuid
+import json
+import os
 
-class Chem(Enum):
-    CARBON = 'C'
-    LITHIUM = 'Li+'
-    SODIUM = 'Na+'
-    POTASSIUM = 'K+'
-    RUBIDIUM = 'Rb+'
-    CESIUM = 'Cs+'
-    CALCIUM = 'Ca2+'
-    STRONTIUM = 'Sr2+'
-    BARIUM = 'Ba2+'
-    COPPER = 'Cu2+'
-    IRON = 'Fe2+'
+working_directory = os.getcwd()
 
-FC_CHEM = 0
-FC_COL = 1
-class FlameColor(Enum):
-    CRIMSON = (Chem.LITHIUM, (244,66,66))
-    YELLOW = (Chem.SODIUM, (255,242,0))
-    LILAC = (Chem.POTASSIUM, (194,123,160))
-    PINK = (Chem.RUBIDIUM, (246, 84, 16))
-    VIOLET = (Chem.CESIUM, (179, 158, 181))
-    ORANGE_RED = (Chem.CALCIUM, (255, 94, 0))
-    RED_RED = (Chem.STRONTIUM, (255, 36, 0))
-    YELLOW_GREEN = (Chem.BARIUM, (181, 230, 29))
-    TURQUOISE = (Chem.COPPER, (0, 217, 192))
-    GOLD_YELLOW = (Chem.IRON, (255, 195, 0))
-    ORANGE_YELLOW = (Chem.CARBON, (255, 165, 0))
-
-SRC_AMT = 'fuel_provided'
-SRC_RATE = 'burn_rate_multiplier'
-SRC_CHEM = 'chemical_comp'
-SRC_COL = 'color'
-class Source(Enum):
-    TWIG = {'fuel_provided': 10.0, 'burn_rate_multiplier': 0.1, 'chemical_comp': Chem.CARBON, 'color': (0,0,0)}
-    LOG = {'fuel_provided': 100.0, 'burn_rate_multiplier': 0.05, 'chemical_comp': Chem.CARBON, 'color': (100,100,100)}
-
-def get_flame_color_from_chemical(chem):
-    for color in FlameColor:
-        if color.value[0] == chem:
-            return color.value[FC_COL]
-    return None
-
-# Frame independent burn rate = x*dt where x is some arbitrary measure of what burns for some period of delta time, e.g mass
-class Asset:
+class Asset(ABC):
     def __init__(self):
-        self.surface = None
-        self.location = (0,0)
-    
-    def set_canvas(self, canvas):
+        self.uuid = uuid.uuid4()
+        self.assets_dir = os.path.join(working_directory, 'assets')
+
+    @abstractmethod
+    def load():
+        pass
+
+    def get_id(self):
+        return self.uuid
+
+class RenderableAsset(ABC, Asset):
+    def __init__(self, canvas, start_loc=(0,0)):
+        super.__init__()
+        self.loc = start_loc
         self.canvas = canvas
 
-    def set_location(self, loc):
-        self.location = loc
+    @abstractmethod
+    def render(self, loc):
+        pass
 
-class FuelSource(Asset):
-    def __init__(self, source, renderable=False):
-        self.name = source.name.lower()
-        self.amount = source.value[SRC_AMT]
-        self.burn_rate_multiplier = source.value[SRC_RATE]
-        self.comp = source.value[SRC_CHEM]
-        self.color = source.value[SRC_COL]
-        self.renderable = renderable
+class Chem(Asset):
+    def __init__(self, chemical):
+        super.__init__()
+        
+        self.directory = os.path.join(self.assets_dir, 'chemicals', f'ch_{chemical.value}.json')
+        self.load()
 
-    def burn(self, dt):
-        fuel_burned = self.burn_rate_multiplier*dt
-        self.amount -= fuel_burned
+    def load(self):
+        with open(self.directory, 'r') as chem:
+            info = json.load(chem)
+
+            self.name = info['name']
+            self.symbol = info['symbol']
+            self.producing_color = tuple(info['producing_color'])
+
+    def __eq__(self, other):
+        return self.name == other.name
+    
+class FuelSource(RenderableAsset):
+    def __init__(self, canvas, chemical, source):
+        Asset.__init__()
+        RenderableAsset.__init__(canvas)
+        
+        self.directory = os.path.join(self.assets_dir, 'fuel_sources', f'src_{source.value}.json')
+        self.chemical = chemical
+        self.has_rendered = False
+        self.is_depleted = False
+        self.load()
+
+    def load(self):
+        with open(self.directory, 'r') as src:
+            info = json.load(src)
+
+            self.name = info['name']
+            self.max_fuel = info['max_fuel']
+            self.fuel = self.max_fuel
+            self.burn_rate_multiplier = info['burn_rate_multiplier']
+            self.primary_color = tuple(info['primary_color'])
+            self.width = info['width']
+            self.height = info['height']
+
+    def update(self, dt):
+        fuel_burned = self.fuel - self.burn_rate_multiplier * dt
+        self.fuel -= fuel_burned
+        self.is_depleted = self.fuel > 0
+        
         return fuel_burned
-    
 
-class Flame(Asset):
-    def __init__(self, fuel, width, height):
-        self.fuel = fuel
-        self.color = None
-        self.sources = []
-        self.size = 0
-        self.width = width
-        self.height = height
+    def get_rect(self):
+        if self.has_rendered:
+            return self.bounding_rect
+        else:
+            None
 
-    def add_fuel(self, fuel_source):
-        self.sources.append(fuel_source)
-        self.fuel += fuel_source.amount
+    def render(self, loc):
+        self.bounding_rect = pygame.Rect(loc, (self.width, self.height))
+        pygame.draw.rect(
+            self.canvas,
+            self.primary_color,
+            self.bounding_rect
+        )
+
+    def __eq__(self, other):
+        return self.name == other.name and self.chemical.eq(other.chemical)
     
+class Flame(RenderableAsset):
+    def __init__(self, canvas, initial_fuel_sources=[]):
+        Asset.__init__()
+        RenderableAsset.__init__(canvas)
+        
+        self.directory = os.path.join('flame', 'base_flame.json')
+        self.sources = initial_fuel_sources
+        
+        self.total_fuel = load_initial_fuel_sources(self.sources)
+        self.curr_fuel = self.total_fuel
+        self.flame_size = self.curr_fuel/self.total_fuel
+        self.has_rendered = False
+        self.load()
+
+    @staticmethod
+    def load_initial_fuel_sources(sources):
+        total_fuel = 0.0
+        for source in sources:
+            total_fuel += source.max_fuel
+        return total_fuel
+    
+    def load(self):
+        with open(self.directory, 'r') as flame:
+            info = json.load(flame)
+
+            self.width = info['width']
+            self.height = info['height']
+
+    def add_fuel_source(self, source):
+        self.source.append(source)
+        self.total_fuel += source.max_fuel
+        self.curr_fuel += source.max_fuel
+
     def has_fuel(self):
         return len(self.sources) > 0
 
-    def get_color(self):
-        return get_flame_color_from_chemical(self.sources[0].comp)
-
-    def render(self):
-        if self.has_fuel():
-            pygame.draw.rect(self.canvas, self.get_color(), pygame.Rect(self.location, (self.width*self.size, self.height*self.size)))
-
     def update(self, dt):
-        recently_burned_source = None
-        self.size = self.fuel/100.00
-        if self.sources[0].amount <= 0.0:
-            recently_burned_source = self.sources.pop(0)
-
         if self.has_fuel():
-            self.color = self.get_color()
-            fuel_burned = self.sources[0].burn(dt)
-            self.fuel -= fuel_burned
+            curr_source = self.sources[0]
+            self.curr_color = curr_source.chemical.producing_color
+            fuel_burned = curr_source.update(dt)
+            self.curr_fuel -= fuel_burned
+        
+            if curr_source.is_depleted():
+                self.total_fuel -= curr_source.max_fuel
+                self.sources.pop(0)
+            
+            self.flame_size = self.curr_fuel/self.total_fuel
+
+    def get_rect(self):
+        if self.has_rendered():
+            return self.bounding_rect
         else:
-            self.fuel = 0.0
+            None
+
+    def render(self, loc):
+        self.bounding_rect = pygame.Rect(loc, (self.width * self.flame_size, self.height * self.flame_size))
+        pygame.draw.rect(
+            self.canvas,
+            self.curr_color,
+            self.bounding_rect
+        )

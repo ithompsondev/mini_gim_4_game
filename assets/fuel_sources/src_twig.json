@@ -1,0 +1,8 @@
+{
+    "name": "Twig",
+    "max_fuel": 10.0,
+    "burn_rate_multiplier": 0.1,
+    "primary_color": [120, 80, 40],
+    "width": 30,
+    "height": 30
+}
