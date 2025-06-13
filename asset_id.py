@@ -13,5 +13,5 @@ def Chem(Enum):
     BARIUM = 'barium'
     COPPER = 'copper'
 
-def Source(Enum):
+def FuelSource(Enum):
     TWIG = 'twig'
