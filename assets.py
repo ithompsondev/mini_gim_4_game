@@ -18,7 +18,7 @@ class Asset(ABC):
     def get_id(self):
         return self.uuid
 
-class RenderableAsset(ABC, Asset):
+class RenderableAsset(Asset, ABC):
     def __init__(self, canvas, start_loc=(0,0)):
         super.__init__()
         self.loc = start_loc

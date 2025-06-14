@@ -55,7 +55,7 @@ class Game(ABC):
         pass
 
     def process_exit_event(self, e_exit):
-        if e_exit.type == K_QUIT:
+        if e_exit.type == QUIT:
             self.running = False
 
             
