@@ -47,9 +47,15 @@ class AssetLoader(Game):
     def init_flame(self):
         twigs = []
         for i in range(0, 5):
-            twigs.append(FuelSource(self.window, Chem(asset_id.Chem.CARBON), asset_id.FuelSource.TWIG))
+            twig = FuelSource(self.window, Chem(asset_id.Chem.CARBON), asset_id.FuelSource.TWIG, debug=True)
+            twigs.append(twig)
+            print('<< LOADED ASSET >>')
+            print(twig)
         
-        flame = Flame(self.window, twigs)
+        flame = Flame(self.window, twigs, debug=True)
+        print('<< LOADED ASSET >>')
+        print(flame)
+
         self.renderable_assets.append(flame)
         self.flame_id = flame.uuid
 

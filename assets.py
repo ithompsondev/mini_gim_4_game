@@ -29,10 +29,11 @@ class RenderableAsset(Asset, ABC):
         pass
 
 class Chem(Asset):
-    def __init__(self, chemical):
+    def __init__(self, chemical, debug=False):
         super.__init__()
         
         self.directory = os.path.join(self.assets_dir, 'chemicals', f'ch_{chemical.value}.json')
+        self.debug = debug
         self.load()
 
     def load(self):
@@ -46,8 +47,23 @@ class Chem(Asset):
     def __eq__(self, other):
         return self.name == other.name
     
+    def __str__(self):
+        if not self.debug:
+            return f'{self.name} ({self.symbol}) produces a {self.producing_color} colored flame'
+        else:
+            return f"""
+                [CHEMICAL]
+                \tid = {self.uuid}
+                \tdir = {self.directory}
+                \tname = {self.name}
+                \tsymbol = {self.symbol}
+                \tproducing color = {self.producing_color}
+
+
+            """
+    
 class FuelSource(RenderableAsset):
-    def __init__(self, canvas, chemical, source):
+    def __init__(self, canvas, chemical, source, debug=False):
         Asset.__init__()
         RenderableAsset.__init__(canvas)
         
@@ -55,6 +71,7 @@ class FuelSource(RenderableAsset):
         self.chemical = chemical
         self.has_rendered = False
         self.is_depleted = False
+        self.debug = debug
         self.load()
 
     def load(self):
@@ -93,8 +110,27 @@ class FuelSource(RenderableAsset):
     def __eq__(self, other):
         return self.name == other.name and self.chemical.eq(other.chemical)
     
+    def __str__(self):
+        if not self.debug:
+            return f'The fuel source: {self.name} has a max fuel potential of {self.max_fuel} with a burn rate of {self.burn_rate_multiplier}'
+        else:
+            return f"""
+                [Fuel Source]
+                \tid = {self.uuid}
+                \tdir = {self.directory}
+                \trendered? = {self.has_rendered}
+                \tdepleted? = {self.is_depleted}
+                \tname = {self.name}
+                \tmax fuel = {self.max_fuel}
+                \tcurrent fuel = {self.fuel}
+                \tburn rate = {self.burn_rate_multiplier}
+                \tprimary color = {self.primary_color}
+                \tself.dimensions = ({self.width}, {self.height})
+                {self.chemical.__str__()}
+            """
+    
 class Flame(RenderableAsset):
-    def __init__(self, canvas, initial_fuel_sources=[]):
+    def __init__(self, canvas, initial_fuel_sources=[], debug=False):
         Asset.__init__()
         RenderableAsset.__init__(canvas)
         
@@ -105,6 +141,7 @@ class Flame(RenderableAsset):
         self.curr_fuel = self.total_fuel
         self.flame_size = self.curr_fuel/self.total_fuel
         self.has_rendered = False
+        self.debug = debug
         self.load()
 
     @staticmethod
@@ -141,6 +178,7 @@ class Flame(RenderableAsset):
                 self.sources.pop(0)
             
             self.flame_size = self.curr_fuel/self.total_fuel
+            print(self.__str__())
 
     def get_rect(self):
         if self.has_rendered():
@@ -155,3 +193,18 @@ class Flame(RenderableAsset):
             self.curr_color,
             self.bounding_rect
         )
+
+    def __str__(self):
+        if not self.debug:
+            return f'Flame is {"burning" if self.has_fuel() else "extinguished"} with fuel level {self.curr_fuel}'
+        else:
+            return f"""
+                [FLAME]
+                \tid = {self.uuid}
+                \tdir = {self.directory}
+                \trendered? = {self.has_rendered}
+                \tsources = {map(lambda src: src.name, self.sources)}
+                \ttotal fuel = {self.total_fuel}
+                \tcurrent fuel = {self.curr_fuel}
+                \tflame size = {self.flame_size}
+            """
