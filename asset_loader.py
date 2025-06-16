@@ -11,6 +11,7 @@ class AssetLoader(Game):
         self.renderable_assets = []
 
     def run(self):
+        flame_loc = self.init_flame()
         self.running = True
         while self.running:
             self.limit_frames()
@@ -18,24 +19,20 @@ class AssetLoader(Game):
             self.record_time()
             self.show_bg()
             self.process_events()
-            
-            if self.flame_generated:
-                flame_index = -1
-                for i, asset in enumerate(self.renderable_assets):
-                    if asset.uuid == self.flame_id:
-                        flame_index = i
-                    asset.update()
-                    asset.render()
 
-                if not self.renderable_assets[flame_index].has_fuel():
-                    self.renderable_assets.pop(flame_index)
-                    self.flame_generated = False
+            self.flame.update(self.dt)
+            self.flame.render(flame_loc)
+            for asset in self.renderable_assets:
+                asset.update(self.dt)
+                # TODO: Logic to determine the location of renderable assets besides the flame
+                asset.render((0, 0))
 
             pygame.display.flip()
 
     def process_events(self):
         for event in pygame.event.get():
             self.process_exit_event(event)
+            self.process_keydown_events(event)
 
     def process_keydown_events(self, e_key):
         if e_key.type == KEYDOWN:
@@ -52,12 +49,11 @@ class AssetLoader(Game):
             print('<< LOADED ASSET >>')
             print(twig)
         
-        flame = Flame(self.window, twigs, debug=True)
+        self.flame = Flame(self.window, twigs, debug=True)
         print('<< LOADED ASSET >>')
-        print(flame)
+        print(self.flame)
 
-        self.renderable_assets.append(flame)
-        self.flame_id = flame.uuid
+        return ((self.scr_width/2) - (self.flame.width/2), (self.scr_height/2) - (self.flame.height/2)) # TODO: Fix me
 
 if __name__ == '__main__':
     game = AssetLoader()

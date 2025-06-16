@@ -1,6 +1,6 @@
 from enum import Enum
 
-def Chem(Enum):
+class Chem(Enum):
     CARBON = 'carbon'
     LITHIUM = 'lithium'
     POTASSIUM = 'potassium'
@@ -13,5 +13,5 @@ def Chem(Enum):
     BARIUM = 'barium'
     COPPER = 'copper'
 
-def FuelSource(Enum):
+class FuelSource(Enum):
     TWIG = 'twig'

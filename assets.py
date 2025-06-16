@@ -9,7 +9,7 @@ working_directory = os.getcwd()
 class Asset(ABC):
     def __init__(self):
         self.uuid = uuid.uuid4()
-        self.assets_dir = os.path.join(working_directory, 'assets')
+        self.assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 
     @abstractmethod
     def load():
@@ -20,7 +20,7 @@ class Asset(ABC):
 
 class RenderableAsset(Asset, ABC):
     def __init__(self, canvas, start_loc=(0,0)):
-        super.__init__()
+        super().__init__()
         self.loc = start_loc
         self.canvas = canvas
 
@@ -30,7 +30,7 @@ class RenderableAsset(Asset, ABC):
 
 class Chem(Asset):
     def __init__(self, chemical, debug=False):
-        super.__init__()
+        super().__init__()
         
         self.directory = os.path.join(self.assets_dir, 'chemicals', f'ch_{chemical.value}.json')
         self.debug = debug
@@ -64,8 +64,7 @@ class Chem(Asset):
     
 class FuelSource(RenderableAsset):
     def __init__(self, canvas, chemical, source, debug=False):
-        Asset.__init__()
-        RenderableAsset.__init__(canvas)
+        super().__init__(canvas)
         
         self.directory = os.path.join(self.assets_dir, 'fuel_sources', f'src_{source.value}.json')
         self.chemical = chemical
@@ -131,13 +130,12 @@ class FuelSource(RenderableAsset):
     
 class Flame(RenderableAsset):
     def __init__(self, canvas, initial_fuel_sources=[], debug=False):
-        Asset.__init__()
-        RenderableAsset.__init__(canvas)
+        super().__init__(canvas)
         
-        self.directory = os.path.join('flame', 'base_flame.json')
+        self.directory = os.path.join(self.assets_dir, 'flame', 'base_flame.json')
         self.sources = initial_fuel_sources
         
-        self.total_fuel = load_initial_fuel_sources(self.sources)
+        self.total_fuel = Flame.load_initial_fuel_sources(self.sources)
         self.curr_fuel = self.total_fuel
         self.flame_size = self.curr_fuel/self.total_fuel
         self.has_rendered = False
@@ -173,7 +171,7 @@ class Flame(RenderableAsset):
             fuel_burned = curr_source.update(dt)
             self.curr_fuel -= fuel_burned
         
-            if curr_source.is_depleted():
+            if curr_source.is_depleted:
                 self.total_fuel -= curr_source.max_fuel
                 self.sources.pop(0)
             
@@ -181,7 +179,7 @@ class Flame(RenderableAsset):
             print(self.__str__())
 
     def get_rect(self):
-        if self.has_rendered():
+        if self.has_rendered:
             return self.bounding_rect
         else:
             None
@@ -193,6 +191,7 @@ class Flame(RenderableAsset):
             self.curr_color,
             self.bounding_rect
         )
+        self.has_rendered = True
 
     def __str__(self):
         if not self.debug:
