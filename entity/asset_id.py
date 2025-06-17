@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 class Chem(Enum):
     CARBON = 'carbon'
@@ -15,3 +15,7 @@ class Chem(Enum):
 
 class FuelSource(Enum):
     TWIG = 'twig'
+
+class RenderPair(IntEnum):
+    ASSET = 0
+    LOCATION = 1

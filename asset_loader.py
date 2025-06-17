@@ -3,6 +3,7 @@ from pygame.locals import *
 from assets import *
 from entity.asset_id import Chem as Chem_ID
 from entity.asset_id import FuelSource as FuelSource_ID
+from entity.asset_id import RenderPair
 from entity.chemical import Chem
 from entity.fuel_source import FuelSource
 from entity.flame import Flame
@@ -15,7 +16,6 @@ class AssetLoader(Game):
         self.renderable_assets = []
 
     def run(self):
-        flame_loc = self.init_flame()
         self.running = True
         while self.running:
             self.limit_frames()
@@ -24,12 +24,10 @@ class AssetLoader(Game):
             self.show_bg()
             self.process_events()
 
-            self.flame.update(self.dt)
-            self.flame.render(flame_loc)
             for asset in self.renderable_assets:
-                asset.update(self.dt)
-                # TODO: Logic to determine the location of renderable assets besides the flame
-                asset.render((0, 0))
+                obj, loc = asset[RenderPair.ASSET], asset[RenderPair.LOCATION]
+                obj.update(self.dt)
+                obj.render(loc)
 
             pygame.display.flip()
 
@@ -53,11 +51,11 @@ class AssetLoader(Game):
             print('<< LOADED ASSET >>')
             print(twig)
         
-        self.flame = Flame(self.window, twigs, debug=True)
+        flame = Flame(self.window, twigs, debug=True)
+        location = ((self.scr_width/2) - (flame.width/2), (self.scr_height/2) - (flame.height/2))
+        self.renderable_assets.append((flame, location))
         print('<< LOADED ASSET >>')
-        print(self.flame)
-
-        return ((self.scr_width/2) - (self.flame.width/2), (self.scr_height/2) - (self.flame.height/2)) # TODO: Fix me
+        print(flame)
 
 if __name__ == '__main__':
     game = AssetLoader()

@@ -2,6 +2,9 @@ import time
 import pygame
 from pygame.locals import *
 from assets import *
+from entity.flame import Flame
+from entity.fuel_source import FuelSource
+from entity.asset_id import FuelSource as FuelSource_ID
 
 pygame.init()
 
@@ -19,11 +22,11 @@ clock = pygame.time.Clock()
 
 def setup(surf):
     flame = Flame(0.0, 150, 150)
-    flame.add_fuel(FuelSource(Source.TWIG))
-    flame.add_fuel(FuelSource(Source.TWIG))
-    flame.add_fuel(FuelSource(Source.TWIG))
-    flame.add_fuel(FuelSource(Source.TWIG))
-    flame.add_fuel(FuelSource(Source.TWIG))
+    flame.add_fuel(FuelSource(FuelSource_ID.TWIG))
+    flame.add_fuel(FuelSource(FuelSource_ID.TWIG))
+    flame.add_fuel(FuelSource(FuelSource_ID.TWIG))
+    flame.add_fuel(FuelSource(FuelSource_ID.TWIG))
+    flame.add_fuel(FuelSource(FuelSource_ID.TWIG))
    
     flame.set_canvas(surf)
     flame.set_location((_width/2 - 15, _height/2 - 15))
