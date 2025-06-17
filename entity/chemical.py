@@ -1,3 +1,7 @@
+from .asset import Asset
+import json
+import os
+
 class Chem(Asset):
     def __init__(self, chemical, debug=False):
         super().__init__()

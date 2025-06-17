@@ -1,7 +1,11 @@
 import pygame
 from pygame.locals import *
 from assets import *
-import asset_id
+from entity.asset_id import Chem as Chem_ID
+from entity.asset_id import FuelSource as FuelSource_ID
+from entity.chemical import Chem
+from entity.fuel_source import FuelSource
+from entity.flame import Flame
 from base_game import Game
 
 class AssetLoader(Game):
@@ -44,7 +48,7 @@ class AssetLoader(Game):
     def init_flame(self):
         twigs = []
         for i in range(0, 5):
-            twig = FuelSource(self.window, Chem(asset_id.Chem.CARBON), asset_id.FuelSource.TWIG, debug=True)
+            twig = FuelSource(self.window, Chem(Chem_ID.CARBON), FuelSource_ID.TWIG, debug=True)
             twigs.append(twig)
             print('<< LOADED ASSET >>')
             print(twig)

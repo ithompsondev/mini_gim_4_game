@@ -1,3 +1,8 @@
+import os
+import json
+import pygame
+from entity.asset import RenderableAsset
+
 class Flame(RenderableAsset):
     def __init__(self, canvas, initial_fuel_sources=[], debug=False):
         super().__init__(canvas)

@@ -1,3 +1,8 @@
+from entity.asset import RenderableAsset
+import pygame
+import json
+import os
+
 class FuelSource(RenderableAsset):
     def __init__(self, canvas, chemical, source, debug=False):
         super().__init__(canvas)

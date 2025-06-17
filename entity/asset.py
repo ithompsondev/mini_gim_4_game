@@ -10,7 +10,7 @@ working_directory = os.getcwd()
 class Asset(ABC):
     def __init__(self):
         self.uuid = uuid.uuid4()
-        self.assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+        self.assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets')
 
     @abstractmethod
     def load():
