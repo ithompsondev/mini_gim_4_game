@@ -25,9 +25,8 @@ class AssetLoader(Game):
             self.process_events()
 
             for asset in self.renderable_assets:
-                obj, loc = asset[RenderPair.ASSET], asset[RenderPair.LOCATION]
-                obj.update(self.dt)
-                obj.render(loc)
+                asset.update(self.dt)
+                asset.render(asset.loc)
 
             pygame.display.flip()
 
@@ -51,9 +50,11 @@ class AssetLoader(Game):
             print('<< LOADED ASSET >>')
             print(twig)
         
+        # TODO: Change the way we render assets. Should assets know their location or should the asset container know their locations?
         flame = Flame(self.window, twigs, debug=True)
         location = ((self.scr_width/2) - (flame.width/2), (self.scr_height/2) - (flame.height/2))
-        self.renderable_assets.append((flame, location))
+        flame.set_loc(location)
+        self.renderable_assets.append(flame)
         print('<< LOADED ASSET >>')
         print(flame)
 

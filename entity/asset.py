@@ -25,6 +25,9 @@ class RenderableAsset(Asset, ABC):
         self.loc = start_loc
         self.canvas = canvas
 
+    def set_loc(self, loc):
+        self.loc = loc
+
     @abstractmethod
     def render(self, loc):
         pass
