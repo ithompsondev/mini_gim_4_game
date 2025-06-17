@@ -88,7 +88,7 @@ class FuelSource(RenderableAsset):
     def update(self, dt):
         fuel_burned = self.fuel - self.burn_rate_multiplier * dt
         self.fuel -= fuel_burned
-        self.is_depleted = self.fuel > 0
+        self.is_depleted = self.fuel <= 0.0
         
         return fuel_burned
 
