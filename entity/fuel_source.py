@@ -27,9 +27,12 @@ class FuelSource(RenderableAsset):
             self.height = info['height']
 
     def update(self, dt):
-        fuel_burned = self.fuel - self.burn_rate_multiplier * dt
+        fuel_burned = self.burn_rate_multiplier * dt
         self.fuel -= fuel_burned
-        self.is_depleted = self.fuel <= 0.0
+        self.is_depleted = self.fuel <= 0.009
+
+        if self.is_depleted:
+            self.has_rendered = False
         
         return fuel_burned
 
@@ -46,6 +49,7 @@ class FuelSource(RenderableAsset):
             self.primary_color,
             self.bounding_rect
         )
+        self.has_rendered = True
 
     def __eq__(self, other):
         return self.name == other.name and self.chemical.eq(other.chemical)
@@ -68,3 +72,16 @@ class FuelSource(RenderableAsset):
                 \tself.dimensions = ({self.width}, {self.height})
                 {self.chemical.__str__()}
             """
+        
+    @staticmethod
+    def create_sources(canvas, chemical, fuel_source, number=1, debug=False):
+        sources = []
+        for i in range(0, number):
+            source = FuelSource(canvas, chemical, fuel_source, debug)
+            sources.append(source)
+
+            if debug:
+                print('<< LOADED ASSET >>')
+                print(source)
+        
+        return sources

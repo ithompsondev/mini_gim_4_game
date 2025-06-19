@@ -3,7 +3,6 @@ from pygame.locals import *
 from assets import *
 from entity.asset_id import Chem as Chem_ID
 from entity.asset_id import FuelSource as FuelSource_ID
-from entity.asset_id import RenderPair
 from entity.chemical import Chem
 from entity.fuel_source import FuelSource
 from entity.flame import Flame
@@ -12,8 +11,9 @@ from base_game import Game
 class AssetLoader(Game):
     def __init__(self):
         super().__init__('asset_loader')
-        self.flame_generated = False
         self.renderable_assets = []
+        self.flame_generated = False
+        self.flame = None
 
     def run(self):
         self.running = True
@@ -27,6 +27,10 @@ class AssetLoader(Game):
             for asset in self.renderable_assets:
                 asset.update(self.dt)
                 asset.render(asset.loc)
+                print(self.dt)
+
+            if not self.flame in self.renderable_assets:
+                self.flame_generated = False
 
             pygame.display.flip()
 
@@ -43,18 +47,12 @@ class AssetLoader(Game):
                     self.flame_generated = True
 
     def init_flame(self):
-        twigs = []
-        for i in range(0, 5):
-            twig = FuelSource(self.window, Chem(Chem_ID.CARBON), FuelSource_ID.TWIG, debug=True)
-            twigs.append(twig)
-            print('<< LOADED ASSET >>')
-            print(twig)
-        
-        # TODO: Change the way we render assets. Should assets know their location or should the asset container know their locations?
+        twigs = FuelSource.create_sources(self.window, Chem(Chem_ID.CARBON), FuelSource_ID.TWIG, 5, debug=True)
         flame = Flame(self.window, twigs, debug=True)
-        location = ((self.scr_width/2) - (flame.width/2), (self.scr_height/2) - (flame.height/2))
-        flame.set_loc(location)
+        
         self.renderable_assets.append(flame)
+        self.flame = flame
+        
         print('<< LOADED ASSET >>')
         print(flame)
 

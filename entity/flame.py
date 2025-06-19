@@ -16,6 +16,7 @@ class Flame(RenderableAsset):
         self.has_rendered = False
         self.debug = debug
         self.load()
+        self.set_loc(((canvas.get_width()/2) - (self.width/2), (canvas.get_height()/2) - (self.height/2)))
 
     @staticmethod
     def load_initial_fuel_sources(sources):
@@ -33,7 +34,8 @@ class Flame(RenderableAsset):
 
     def add_fuel_source(self, source):
         self.source.append(source)
-        self.total_fuel += source.max_fuel
+        if self.curr_fuel + source.fuel >= self.total_fuel:
+            self.total_fuel += source.max_fuel
         self.curr_fuel += source.max_fuel
 
     def has_fuel(self):
@@ -47,7 +49,6 @@ class Flame(RenderableAsset):
             self.curr_fuel -= fuel_burned
         
             if curr_source.is_depleted:
-                self.total_fuel -= curr_source.max_fuel
                 self.sources.pop(0)
             
             self.flame_size = self.curr_fuel/self.total_fuel
@@ -68,6 +69,9 @@ class Flame(RenderableAsset):
         )
         self.has_rendered = True
 
+    def __eq__(self, other):
+        return self.uuid == other.uuid
+
     def __str__(self):
         if not self.debug:
             return f'Flame is {"burning" if self.has_fuel() else "extinguished"} with fuel level {self.curr_fuel}'
@@ -77,7 +81,8 @@ class Flame(RenderableAsset):
                 \tid = {self.uuid}
                 \tdir = {self.directory}
                 \trendered? = {self.has_rendered}
-                \tsources = {map(lambda src: src.name, self.sources)}
+                \tcurrent source = {self.sources[0]}
+                \tcurrent source fuel = {self.sources[0].fuel}
                 \ttotal fuel = {self.total_fuel}
                 \tcurrent fuel = {self.curr_fuel}
                 \tflame size = {self.flame_size}

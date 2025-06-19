@@ -15,7 +15,3 @@ class Chem(Enum):
 
 class FuelSource(Enum):
     TWIG = 'twig'
-
-class RenderPair(IntEnum):
-    ASSET = 0
-    LOCATION = 1
