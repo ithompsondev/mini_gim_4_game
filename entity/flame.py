@@ -52,6 +52,10 @@ class Flame(RenderableAsset):
                 self.sources.pop(0)
             
             self.flame_size = self.curr_fuel/self.total_fuel
+            self.set_loc((
+                (self.canvas.get_width()/2) - (self.width/2), 
+                (self.canvas.get_height()/2) - (self.height/2)
+            ))
             print(self.__str__())
 
     def get_rect(self):
